@@ -1,3 +1,6 @@
+# limit値を設定。設定した回数分連敗が続いたら掛け金を初期値に戻しマーチンゲール法を続けない。
+# 負けた回数がn回を超えたとき、取引を終了し結果を記録する。
+
 import numpy as np
 import matplotlib.pyplot as plt
 import random
