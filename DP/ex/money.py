@@ -1,57 +1,68 @@
-#    一日プラス２千円で終了
-
-#     ３連続で負けたら終了
-
 import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-n = 1000000  # 資金n円
+initial_balance = 100000  # 初期資金の設定
+initial_bets = 1000  # 初期掛け金の設定
+trials = 100  # 試行回数の設定
+limit = 3  # 取引制限値の設定
 
-N = np.array([])  # 試行結果の配列
+payout = 1.85  # ペイアウトの設定
 
-bets = 1000  # betsの最低金額1,000円
+result_balance = np.array([])  # 残高の試行結果
+result_tarade_count = np.array([])  # 取引回数の試行結果
 
-day_count = 0
+for i in range(trials):  # trails回実行する
 
-while True:  # n日やる
-    if n < 1000:  # or day_count == 365:
-        break
-    win = 0  # 勝ち分の初期化
-    count = 0  # 一日の取引回数
+    balance = initial_balance  # 残高の初期化
+    bets = initial_bets  # 掛け金の初期化
 
-    while True:  # 勝つまでやる
+    win_count = 0  # 勝った回数の初期化
+    lose_count = 0  # 負けた回数の初期化
 
-        if bets == 8000:  # betsがm円のとき,やめる。
-            bets = 1000
+    while True:  # 取引を繰り返す
+
+        if balance < initial_bets:  # 残高が初期掛け金を下回ったら終了する
+            break
+        if balance < bets:  # 残高が現在の掛け金を下回ったら終了する
+            break
+        if lose_count >= 100:  # 負けた回数がn回以上のとき終了する
             break
 
-        if n <= 0 or bets > n:  # 資金が0円、または、bets金額が資金を超える場合は終了する。
-            bets = 1000
-            break
+        losing_streak_count = 0  # 連敗記録の初期化
 
-        k = random.randint(1, 100)  # 確率1/2
+        while True:  # 勝つまで繰り返す
 
-        if k <= 52:  # 勝ちのとき
-            count += 1  # 取引回数加算
-            # print("勝ち")
-            n += int(bets*0.95)  # betsが加算される。
-            win += bets  # 勝ち分の計算
-            bets = 1000  # betsの初期化
-            #print("所持金:{} 勝ち分:{}".format(n, win))
-            break
+            if balance < bets:  # 掛け金が残高を超えたら終了する。
+                bets = initial_bets  # 掛け金を初期化してから終了する。
+                break
 
-        else:  # 負けのとき
-            count += 1  # 取引回数加算
-            # print("負け")
-            n -= bets  # betsが没収される。
-            win -= bets  # 勝ち分の計算（マイナス）
-            bets = int(bets * 2)  # betsを2倍にする
-            #print("所持金:{} 勝ち分:{} next bets:{}".format(n, win, bets))
-    day_count += 1
+            k = random.randint(1, 100)  # ランダム値の生成
 
-    N = np.append(N, n)  # 一日の取引を記録する。
-    print("win:{} 取引回数:{} 資金:{} 日にち:{}".format(
-        win, count, n, day_count))  # 勝ち分を表示する。
+            balance -= bets  # 掛け金分を支払う（取引開始）
 
-print("total win:{}".format(int(N[len(N)-1]-1000000)))
+            if k <= 50:  # 勝ったのとき
+                win_count += 1  # 回数の加算
+                balance += int(bets * payout)  # 残高に(掛け金*payout)が加算される。
+                bets = initial_bets  # 掛け金の初期化
+                losing_streak_count = 0  # 連敗カウントの初期化
+                break  # その日の取引の終了
+
+            else:  # 負けのとき
+                lose_count += 1  # 回数の加算
+                losing_streak_count += 1  # 連敗カウントの加算
+
+                if losing_streak_count == limit:  # limit連敗のとき終了する
+                    bets = initial_bets  # 掛け金の初期化
+                    break
+
+                # マーチンゲール法（改良）　負けた額の２倍ではなくpayout率に応じて勝ち分が+になるように調整
+                parallel_balance = balance + int(bets * payout)  # もし勝っていた場合の残高
+                # 掛け金を次に勝ったときに勝ち分が(initial_bets * (1-payout))円となるよう調整する
+                bets = int((parallel_balance - balance)/(payout - 1))
+
+    print("result:{} win:{} 取引回数:{} 勝ち:{} 負け:{}".format(
+        balance, balance - initial_balance, win_count + lose_count, win_count, lose_count))  # 結果の出力
+    result_balance = np.append(result_balance, balance)  # 残高を記録する。
+    result_tarade_count = np.append(
+        result_tarade_count, win_count+lose_count)  # 試行回数を記録する
