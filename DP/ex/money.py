@@ -26,12 +26,13 @@ for i in range(trials):  # trails回実行する
     max_losing_count = 0
 
     while True:  # 取引を繰り返す
-
+        
         if balance < initial_bets:  # 残高が初期掛け金を下回ったら終了する
             break
         if balance < bets:  # 残高が現在の掛け金を下回ったら終了する
             break
-        if lose_count >= 1000:  # 負けた回数がn回以上のとき終了する
+        
+        if lose_count >= 100:  # 負けた回数がn回以上のとき終了する
             break
 
         losing_streak_count = 0  # 連敗記録の初期化
